@@ -1,10 +1,9 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'config/api_config.dart';
 import 'services/gemini_service.dart';
 import 'screens/pokemon_list_screen.dart';
+import 'screens/chat_screen.dart'; // ← Tambahkan ini!
 
 void main() {
   runApp(MyApp());
@@ -50,6 +49,9 @@ class MyApp extends StatelessWidget {
       ),
       home: AppInitializer(),
       debugShowCheckedModeBanner: false,
+      routes: {
+        '/chat': (context) => const ChatScreen(), // Tambahkan route '/chat'
+      },
     );
   }
 }
@@ -63,60 +65,56 @@ class _AppInitializerState extends State<AppInitializer> {
   bool _isInitialized = false;
   String _initializationError = '';
   late GeminiService _geminiService;
-  
+
   @override
   void initState() {
     super.initState();
     _initializeApp();
   }
-  
+
   Future<void> _initializeApp() async {
     try {
-      // Validasi setup API
       final validation = ApiConfig.validateSetup();
-      
+
       if (kDebugMode) {
         debugPrint('🔧 Setup Status: ${ApiConfig.getSetupStatus()}');
         debugPrint('🔧 Validation: $validation');
       }
-      
-      // Inisialisasi Gemini Service
+
       final apiKey = validation['apiKey'] as String;
       _geminiService = GeminiService(apiKey: apiKey);
-      
-      // Test koneksi jika API key valid
+
       if (validation['isValid'] as bool) {
         final connectionTest = await _geminiService.testConnection();
         if (kDebugMode) {
           debugPrint('🔗 Connection test: ${connectionTest ? 'Success' : 'Failed'}');
         }
       }
-      
+
       setState(() {
         _isInitialized = true;
         if (!(validation['isValid'] as bool)) {
           _initializationError = validation['instructions'] as String;
         }
       });
-      
     } catch (e) {
       setState(() {
         _isInitialized = true;
         _initializationError = 'Error saat inisialisasi: $e';
       });
-      
+
       if (kDebugMode) {
         debugPrint('❌ Initialization error: $e');
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return const SplashScreen();
     }
-    
+
     if (_initializationError.isNotEmpty) {
       return ApiSetupScreen(
         error: _initializationError,
@@ -129,14 +127,14 @@ class _AppInitializerState extends State<AppInitializer> {
         },
       );
     }
-    
+
     return PokemonListScreen();
   }
 }
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key}) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,13 +193,13 @@ class SplashScreen extends StatelessWidget {
 class ApiSetupScreen extends StatelessWidget {
   final String error;
   final VoidCallback onRetry;
-  
+
   const ApiSetupScreen({
     Key? key,
     required this.error,
     required this.onRetry,
   }) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

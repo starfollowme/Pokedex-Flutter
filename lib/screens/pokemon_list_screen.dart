@@ -24,8 +24,7 @@ class _PokemonListScreenState extends State<PokemonListScreen>
   final int _limit = 20;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  
-  // Animation controllers
+
   late AnimationController _fadeController;
   late AnimationController _searchBarController;
   late Animation<double> _fadeAnimation;
@@ -36,8 +35,7 @@ class _PokemonListScreenState extends State<PokemonListScreen>
     super.initState();
     _fetchInitialPokemon();
     _scrollController.addListener(_onScroll);
-    
-    // Initialize animations
+
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -46,14 +44,14 @@ class _PokemonListScreenState extends State<PokemonListScreen>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
     _searchAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _searchBarController, curve: Curves.easeOut),
     );
-    
+
     _searchBarController.forward();
   }
 
@@ -75,7 +73,7 @@ class _PokemonListScreenState extends State<PokemonListScreen>
       _offset = 0;
       _error = null;
     });
-    
+
     try {
       final initialList =
           await _pokeApiService.fetchPokemonList(limit: _limit, offset: 0);
@@ -164,7 +162,6 @@ class _PokemonListScreenState extends State<PokemonListScreen>
     );
   }
 
-  // Enhanced Search Bar with animations
   Widget _buildSearchBar() {
     return AnimatedBuilder(
       animation: _searchAnimation,
@@ -227,7 +224,6 @@ class _PokemonListScreenState extends State<PokemonListScreen>
     );
   }
 
-  // Enhanced Error State with better visuals
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -267,44 +263,25 @@ class _PokemonListScreenState extends State<PokemonListScreen>
               ),
             ),
             const SizedBox(height: 32),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
-                  ],
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+              label: const Text(
+                'Coba Lagi',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
               ),
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                label: const Text(
-                  'Coba Lagi',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+              onPressed: _fetchInitialPokemon,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
                 ),
-                onPressed: _fetchInitialPokemon,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
@@ -314,23 +291,15 @@ class _PokemonListScreenState extends State<PokemonListScreen>
     );
   }
 
-  // Enhanced Loading State
   Widget _buildLoadingState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).primaryColor,
-              ),
+          CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).primaryColor,
             ),
           ),
           const SizedBox(height: 24),
@@ -342,20 +311,11 @@ class _PokemonListScreenState extends State<PokemonListScreen>
               color: Colors.grey.shade700,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Siap-siap bertemu teman baru!',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
-            ),
-          ),
         ],
       ),
     );
   }
 
-  // Enhanced App Bar with gradient
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       title: Row(
@@ -386,6 +346,14 @@ class _PokemonListScreenState extends State<PokemonListScreen>
               fontWeight: FontWeight.bold,
               fontSize: 24,
             ),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline_rounded),
+            color: Colors.white,
+            onPressed: () {
+              Navigator.pushNamed(context, '/chat');
+            },
           ),
         ],
       ),
@@ -441,7 +409,6 @@ class _PokemonListScreenState extends State<PokemonListScreen>
     );
   }
 
-  // Enhanced Pokemon Grid with animations
   Widget _buildPokemonGrid() {
     if (_filteredPokemonList.isEmpty && _searchController.text.isNotEmpty) {
       return Center(
@@ -475,69 +442,31 @@ class _PokemonListScreenState extends State<PokemonListScreen>
       );
     }
 
-    return AnimatedBuilder(
-      animation: _fadeAnimation,
-      builder: (context, child) {
-        return Opacity(
-          opacity: _fadeAnimation.value,
-          child: GridView.builder(
-            padding: const EdgeInsets.all(16.0),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.15,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+    return GridView.builder(
+      padding: const EdgeInsets.all(16.0),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.15,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: _filteredPokemonList.length + (_isLoadingMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == _filteredPokemonList.length) {
+          return Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor,
+              ),
             ),
-            itemCount: _filteredPokemonList.length + (_isLoadingMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == _filteredPokemonList.length) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).primaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Memuat...',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              
-              final pokemonItem = _filteredPokemonList[index];
-              return AnimatedContainer(
-                duration: Duration(milliseconds: 300 + (index * 50)),
-                curve: Curves.easeOutBack,
-                child: PokemonCard(
-                  pokemonListItem: pokemonItem,
-                  pokeApiService: _pokeApiService,
-                ),
-              );
-            },
-          ),
+          );
+        }
+
+        final pokemonItem = _filteredPokemonList[index];
+        return PokemonCard(
+          pokemonListItem: pokemonItem,
+          pokeApiService: _pokeApiService,
         );
       },
     );
